@@ -61,19 +61,18 @@ function sessionCheck () {
 }
 
 function commonCheck ($pdo) {
-
-    if (!$_GET['profile_id'] || !isset($_GET['profile_id'])) {
+    $profileId = filter_input(INPUT_GET, 'profile_id', FILTER_VALIDATE_INT);
+    if (false === $profileId) {
         $_SESSION['error'] = 'No user selected.';
         header('Location: index.php');
-        return;
+        exit();
     }
-    else {
-        $query = $pdo->query('SELECT * FROM profile WHERE profile_id =' . $_GET['profile_id']);
-        if ($query->rowCount() == 0) {
-            $_SESSION['error'] = 'Profile not found.';
-            header('Location: index.php');
-            return;
-        } 
+
+    $query = $pdo->query('SELECT * FROM profile WHERE profile_id =' . $profileId);
+    if ($query->rowCount() == 0) {
+        $_SESSION['error'] = 'Profile not found.';
+        header('Location: index.php');
+        exit();
     }
 }
 

@@ -7,11 +7,12 @@
     cancelCheck();
     commonCheck($pdo);
 
+    $profileId = filter_input(INPUT_GET, 'profile_id', FILTER_VALIDATE_INT);
     if (isset($_POST['Save'])) {
         $msg = checkInput();
         if (is_string($msg)) {
             $_SESSION['error'] = $msg;
-            header('Location: edit.php?profile_id=' . $_GET['profile_id']);
+            header('Location: edit.php?profile_id=' . $profileId);
             return;
         }
 
@@ -23,7 +24,7 @@
                 headline = :headline,
                 summary = :summary
             WHERE
-                profile_id = ' . $_GET['profile_id']
+                profile_id = ' . $profileId
             );
 
         $updateQuery->execute([
@@ -34,14 +35,14 @@
             ':summary' => htmlentities($_POST['summary'])
         ]);
 
-        $pdo->query('DELETE FROM position WHERE profile_id =' . $_GET['profile_id']);
-        $pdo->query('DELETE FROM education WHERE profile_id =' . $_GET['profile_id']);
+        $pdo->query('DELETE FROM position WHERE profile_id =' . $profileId);
+        $pdo->query('DELETE FROM education WHERE profile_id =' . $profileId);
 
         for ($i = 0; $i < 9; $i++) {
             if (isset($_POST['pos-year' . $i])) {
                 $queryPos = $pdo->prepare('INSERT INTO position (profile_id, pos_rank, year, description) VALUES (:profile_id, :pos_rank, :year, :description)');
                 $queryPos->execute([
-                    ':profile_id' => $_GET['profile_id'],
+                    ':profile_id' => $profileId,
                     ':pos_rank' => $i + 1,
                     ':year' => htmlentities($_POST['pos-year' . $i]),
                     ':description' => htmlentities($_POST['desc' . $i])
@@ -60,7 +61,7 @@
 
                 $queryEdu = $pdo->prepare('INSERT INTO education (profile_id, institution_id, edu_rank, year) VALUES (:profile_id, :institution_id, :edu_rank, :year)');
                 $queryEdu->execute([
-                    ':profile_id' => $_GET['profile_id'],
+                    ':profile_id' => $profileId,
                     ':institution_id' => $schoolId,
                     ':edu_rank' => $i + 1,
                     ':year' => htmlentities($_POST['edu-year' . $i]),
@@ -84,7 +85,7 @@
     <div class="container">
         <?php
             echo('<h1>Adding profile for ' . $_SESSION['name'] . '</h1><br>');
-            $query = $pdo->query('SELECT * FROM profile WHERE profile_id =' . $_GET['profile_id'])->fetch(PDO::FETCH_ASSOC);
+            $query = $pdo->query('SELECT * FROM profile WHERE profile_id =' . $profileId)->fetch(PDO::FETCH_ASSOC);
         ?>
         <form method="POST">
             <label for="first_name">First Name:</label> <input type="text" name="first_name" id="first_name" class="form-control" value="<?= $query['first_name'] ?>"><br>
@@ -99,7 +100,7 @@
                     FROM institution
                     INNER JOIN education ON institution.institution_id = education.institution_id
                     INNER JOIN profile ON profile.profile_id = education.profile_id
-                    WHERE profile.profile_id=' . $_GET['profile_id']
+                    WHERE profile.profile_id=' . $profileId
                 );
                 if ($eduQuery->rowCount() > 0) {
                     for ($i = 0; $row = $eduQuery->fetch(PDO::FETCH_ASSOC); $i++) {
@@ -121,7 +122,7 @@
             <span style="display: inline-block; width: 80px">Position</span><button id="btn-add-position" class="btn btn-info">+</button><br><br>
             <div id="add-position">
             <?php
-                $posQuery = $pdo->query('SELECT * FROM position WHERE profile_id =' . $_GET['profile_id'] . ' ORDER BY pos_rank');
+                $posQuery = $pdo->query('SELECT * FROM position WHERE profile_id =' . $profileId . ' ORDER BY pos_rank');
                 if ($posQuery->rowCount() > 0) {
                     for ($i = 0; $row = $posQuery->fetch(PDO::FETCH_ASSOC); $i++) {
                         echo('

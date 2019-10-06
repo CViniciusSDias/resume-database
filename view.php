@@ -6,7 +6,8 @@
     cancelCheck();
     commonCheck($pdo);
 
-    $query = $pdo->query('SELECT * FROM profile WHERE profile_id =' . $_GET['profile_id'])->fetch(PDO::FETCH_ASSOC);
+    $profileId = filter_input(INPUT_GET, 'profile_id', FILTER_VALIDATE_INT);
+    $query = $pdo->query('SELECT * FROM profile WHERE profile_id =' . $profileId)->fetch(PDO::FETCH_ASSOC);
 ?>
 
 <!DOCTYPE html>
@@ -29,7 +30,7 @@
                     FROM institution
                     INNER JOIN education ON institution.institution_id = education.institution_id
                     INNER JOIN profile ON profile.profile_id = education.profile_id
-                    WHERE profile.profile_id=' . $_GET['profile_id']
+                    WHERE profile.profile_id=' . $profileId
                     );
                 if ($eduQuery->rowCount() > 0) {
                     echo('
@@ -41,7 +42,7 @@
                     }
                     echo('</ul>');
                 }
-                $posQuery = $pdo->query('SELECT * FROM position WHERE profile_id =' . $_GET['profile_id'] . ' ORDER BY pos_rank');
+                $posQuery = $pdo->query('SELECT * FROM position WHERE profile_id =' . $profileId . ' ORDER BY pos_rank');
                 if ($posQuery->rowCount() > 0) {
                     echo('
                         <strong>Positions: </strong>
